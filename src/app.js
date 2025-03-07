@@ -63,17 +63,41 @@ app.delete("/user", async(req, res)=>{
 });
 
 //update data from user
-app.patch("/user", async(req, res)=>{
-   const userid = req.body.userid;
-   const data = req.body;
-  try{
-    //const user = await User.findByIdAndDelete(id);
-     await User.findByIdAndUpdate({_id : userid}, data);
-    res.send("User updated");
-  }catch(err){
-    res.status(404).send("user not found")
+app.patch("/user/:userId", async (req, res) => {
+  const userid = req.params?.userId;
+  const data = req.body;
+  try {
+    const ALLOWED_UPDATES = ["photoUrl", "about", "gender", "age", "skills"];
+
+    const isUpdatedAllowed = Object.keys(data).every((k) =>
+      ALLOWED_UPDATES.includes(k)
+    );
+
+    if (!isUpdatedAllowed) {
+      throw new Error("Updates are not allowed");
+    }
+
+    if (data.skills && data.skills.length > 10) {
+      throw new Error("Skills cannot be more than 10");
+    }
+
+    const user = await User.findByIdAndUpdate(userid, data, {
+      returnDocument: "after",
+      new: true,
+      runValidators: true,
+      context: "query",
+    });
+
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    res.send("User updated successfully");
+  } catch (err) {
+    res.status(400).send({ error: err.message });
   }
-})
+});
+
 
 connectDB()
   .then(() => {
