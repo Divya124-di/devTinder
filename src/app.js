@@ -2,20 +2,50 @@ const express = require("express");
 const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user");
-
+const validate = require("./utils/validation");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  
-  // Creating a new instance of the User model
-  const user = new User(req.body);
+ try {
+  const { firstName, lastName, emailId, password } = req.body;
+  const saltRounds = 10;
+   //validate the data
+   validate(req);
+   //Encrypt the password
+const passwordHash = await bcrypt .hash(password, saltRounds)
+   // Creating a new instance of the User model
+   //const user = new User(req.body); -- this is not a good practice
+   const user = new User({
+     firstName,
+     lastName,
+     emailId,
+     password: passwordHash,
+   });
+   await user.save();
+   res.send("User Added successfully!");
+ } catch (err) {
+   res.status(400).send("ERROR:" + err.message);
+ }
+});
 
-   try {
-    await user.save();
-    res.send("User Added successfully!");
-  } catch (err) {
-    res.status(400).send("Error saving the user:" + err.message);
+app.post("/login", async(req, res)=>{
+  try{
+    const {emailId, password} = req.body;
+    const user = await User.findOne({emailId: emailId});
+    if(!user){
+      throw new Error("User not found");
+    }
+    const isPasswordMatched = await bcrypt.compare(password, user.password);
+    if(!isPasswordMatched){
+      throw new Error("Invalid password");
+    }else{
+      res.send("Login successful");
+    }
+
+  }catch(err){
+    res.status(400).send("ERROR:" + err.message);
   }
 });
 
