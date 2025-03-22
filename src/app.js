@@ -4,9 +4,13 @@ const app = express();
 const User = require("./models/user");
 const validate = require("./utils/validation");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const Jwt = require("jsonwebtoken");
+
 require("dotenv").config();
 app.use(express.json());
-
+app.use(cookieParser());
+//signup api
 app.post("/signup", async (req, res) => {
  try {
   const { firstName, lastName, emailId, password } = req.body;
@@ -29,7 +33,7 @@ const passwordHash = await bcrypt .hash(password, saltRounds)
    res.status(400).send("ERROR:" + err.message);
  }
 });
-
+//login api
 app.post("/login", async(req, res)=>{
   try{
     const {emailId, password} = req.body;
@@ -41,6 +45,10 @@ app.post("/login", async(req, res)=>{
     if(!isPasswordMatched){
       throw new Error("Invalid password");
     }else{
+      //create a jwt token
+      const token = await Jwt.sign({_id:user._id}, "secretkey");
+      //add token to cookie and send the response to the user
+      res.cookie("token", token);
       res.send("Login successful");
     }
 
@@ -48,6 +56,27 @@ app.post("/login", async(req, res)=>{
     res.status(400).send("ERROR:" + err.message);
   }
 });
+//profile page
+app.get("/profile", async(req,res)=>{
+  try{
+      const cookies = req.cookies;
+  const {token} = cookies;
+  if(!token){
+    res.status(401).send("Unauthenticated");
+  }
+  //verify the token
+  const decodedMessage = await Jwt.verify(token, "secretkey");
+  const userId = decodedMessage._id;
+  const user
+  = await User.findById(userId);
+  if(!user){
+    res.status(404).send("User not found");
+  }
+  res.send(user);
+  } catch(err){
+    res.status(400).send("ERROR:" + err.message);
+  }
+})
 
 //Get user by email  
 app.get("/user", async(req, res)=>{
