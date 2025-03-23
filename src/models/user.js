@@ -1,6 +1,8 @@
 const { type } = require("express/lib/response");
 const mongoose = require("mongoose");
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 
 const userSchema = new mongoose.Schema(
@@ -63,5 +65,22 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// here we cannot use arrow function because arrow function does not bind this keyword
+// here we are using normal function because we need to bind this keyword
+userSchema.methods.getjwt = async function(){
+  const user = this; //this refers to the user instance that is calling this function 
+  const token = await jwt.sign({_id:user._id },process.env.SECRET_KEY,{expiresIn:"1h"});
+  return token;
+}
+
+userSchema.methods.isPasswordValid = async function (passwordInputByUser){
+  const user = this;
+  const passwordHash = user.password; // this refers to the user instance that is calling this function(origibal password)
+     const isPasswordMatched = await bcrypt.compare(
+      passwordInputByUser, 
+      user.passwordHash);
+  return isPasswordMatched;
+}
 
 module.exports = mongoose.model("User", userSchema);

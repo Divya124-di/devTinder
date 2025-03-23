@@ -19,7 +19,7 @@ app.post("/signup", async (req, res) => {
    //validate the data
    validate(req);
    //Encrypt the password
-const passwordHash = await bcrypt .hash(password, saltRounds)
+const passwordHash = await bcrypt.hash(password, saltRounds)
    // Creating a new instance of the User model
    //const user = new User(req.body); -- this is not a good practice
    const user = new User({
@@ -42,12 +42,13 @@ app.post("/login", async(req, res)=>{
     if(!user){
       throw new Error("User not found");
     }
-    const isPasswordMatched = await bcrypt.compare(password, user.password);
+    //offload the function for different function(helper function)-userSchema
+    const isPasswordMatched = await user.isPasswordValid(password);
     if(!isPasswordMatched){
       throw new Error("Invalid password");
     }else{
       //create a jwt token
-      const token = await Jwt.sign({_id:user._id}, "secretkey", {expiresIn: "1d"});
+      const token = await user.getjwt();
       //add token to cookie and send the response to the user
       res.cookie("token", token, {expires: new Date(Date.now() + 86400000), httpOnly: true});
       res.send("Login successful");
