@@ -1,6 +1,7 @@
 const express = require("express");
 const authRouter = express.Router();
-const validate = require("../utils/validation");
+const { validate } = require("../utils/validation");
+
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 
@@ -15,7 +16,6 @@ authRouter.post("/signup", async (req, res) => {
    //Encrypt the password
 const passwordHash = await bcrypt.hash(password, saltRounds)
    // Creating a new instance of the User model
-   //const user = new User(req.body); -- this is not a good practice
    const user = new User({
      firstName,
      lastName,
@@ -53,5 +53,12 @@ authRouter.post("/login", async(req, res)=>{
     res.status(400).send("ERROR:" + err.message);
   }
 });
+
+//logout api
+authRouter.post("/logout", (req, res)=>{
+   // const cookies = res.clearCookie("token");
+   res.cookie("token", null, {expires: new Date(Date.now()), httpOnly: true});
+    res.send("Logout successful");
+})
 
 module.exports = authRouter;
