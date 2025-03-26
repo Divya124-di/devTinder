@@ -11,7 +11,7 @@
 -PATCH /profile/password
 
 ## connectionRequestRouter
--POST /request/send/interested/:userId
+-POST /request/send/interested/:toUserId
 -POST /request/send/ignored/:userId
 -POST /request/review/accepted/:requestId
 -POST /request/review/rejected/:requestId
@@ -20,3 +20,5 @@
 -GET /user/connections
 -GET /user/request
 -GET /feed - gets you the profiles of other users on the platform
+
+* status - ignored, accepted, rejected, interested
