@@ -32,10 +32,10 @@ connectionRequestSchema.index({fromUserId: 1, toUserId: 1}, {unique: true});
 //validate that a user cannot send a connection request to themselves 
 connectionRequestSchema.pre("save", function(next){
     const connectionRequest = this;
-    if(connectionRequest.fromUserId.equals(connectionRequest.toUseId)){
+    if(connectionRequest.fromUserId.equals(connectionRequest.toUserId)){
         throw new Error("You cannot send a connection request to yourself");
     }
-    next();
+    next(); 
 })
 const ConnectionRequestModel = mongoose.model("ConnectionRequest", connectionRequestSchema);
 module.exports = ConnectionRequestModel;

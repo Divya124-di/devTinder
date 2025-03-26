@@ -50,5 +50,39 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async(req, res) 
   }
 });
 
+requestRouter.post("/request/review/:status/:requestId", userAuth, async(req, res)=>{
+  // divya ---->>>> puja
+  //loggedinUser --- puja(toUserId)
+  //status - interested
+  //requestId --- should be valid
+  try{
+const loggedin = req.user._id; //receiver should be the same person who is loggedin
+const status = req.params.status;
+
+const allowedStatus = ['accepted', 'rejected']; 
+if(!allowedStatus.includes(status)){
+  return res.status(400).json({message: "Invalid status"});
+}
+
+const connectionRequest = await ConnectionRequest.findOne({
+  _id: req.params.requestId,
+  toUserId: loggedin,
+  status: 'interested'
+});
+if(!connectionRequest){
+  return res.status(404).json({message: "Connection request not found"}); 
+}
+
+connectionRequest.status = status;
+const data = await connectionRequest.save();
+res.json({
+  message: "Connection request has been " + status, data});
+
+  }catch(err){
+    console.log(err);
+    res.status(500).json({message: "Internal server error"});
+  }
+});
+
 
 module.exports = requestRouter;
