@@ -1,6 +1,8 @@
 const express = require("express");
 const connectDB = require("./config/database");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
+
 require("dotenv").config();
 
 const app = express();
@@ -8,6 +10,12 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({
+  origin: ["http://localhost:3000", "https://your-production-url.com"], // Replace with your frontend URL
+  credentials: true, // Allow credentials (cookies) to be sent
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+})); // for cross-origin requests
+
 
 // Connect to Database First
 connectDB()

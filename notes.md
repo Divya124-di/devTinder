@@ -53,7 +53,7 @@ Make your signup API dynamic to recive data from the end user
 
 User.findOne with duplucate email ids, which object returned
 
-API- Get user by email
+API- Get user by email 
 API - Feed API - GET /feed - get all the users from the database
 API - Get user by ID
 Create a delete user API
