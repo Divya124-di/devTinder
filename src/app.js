@@ -10,11 +10,31 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-  origin: ["http://localhost:3000", "https://your-production-url.com"], // Replace with your frontend URL
-  credentials: true, // Allow credentials (cookies) to be sent
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-})); // for cross-origin requests
+
+
+
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173", // frontend origin
+//     methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"], // allow PATCH
+//     credentials: true,
+//     preflightContinue: false,
+//     optionsSuccessStatus: 204,
+//   })
+// );
+
+// CORS middleware
+
+const corsOptions = {
+  origin: "http://localhost:5173", // Your frontend origin
+  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"], // include PATCH!
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
+// 👇 This line is critical for OPTIONS preflight requests
+app.options("*", cors(corsOptions));
 
 
 // Connect to Database First

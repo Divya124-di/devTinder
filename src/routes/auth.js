@@ -22,8 +22,18 @@ const passwordHash = await bcrypt.hash(password, saltRounds)
      emailId,
      password: passwordHash,
    });
-   await user.save();
-   res.send("User Added successfully!");
+   const savedUser = await user.save();
+   const token = await savedUser.getjwt();
+   //add token to cookie and send the response to the user
+   res.cookie("token", token, {
+     expires: new Date(Date.now() + 86400000),
+     httpOnly: true,
+   });
+
+   res.json({
+     message: "User created successfully",
+     data: savedUser,
+   });
  } catch (err) {
    res.status(400).send("ERROR:" + err.message);
  }
@@ -46,7 +56,7 @@ authRouter.post("/login", async(req, res)=>{
       const token = await user.getjwt();
       //add token to cookie and send the response to the user
       res.cookie("token", token, {expires: new Date(Date.now() + 86400000), httpOnly: true});
-      res.send(user);
+      res.send(user); 
     }
 
   }catch(err){

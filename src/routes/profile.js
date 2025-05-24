@@ -11,29 +11,28 @@ const bcrypt = require("bcrypt");
 profileRouter.get("/profile/view", userAuth, async(req,res)=>{
   try{
   const user =req.user;
-  res.send(user.firstName + "is the user");
+  res.send(user);
   } catch(err){
     res.status(400).send("ERROR:" + err.message);
   }
 });
 //profile edit api
-profileRouter.patch("/profile/edit", userAuth, async(req, res)=>{
-  try{
-     //sanitize the data before updating
-     if(!validateEditProfileData(req)){
-      throw new Error("Invalid data");
-     }
-     const loggedinUser = req.user;
-       Object.keys(req.body).forEach(
-         (key) => (loggedinUser[key] = req.body[key])
-       );
-       await loggedinUser.save();
-     res.send(`${loggedinUser.firstName}, your profile is updated`);
-     
-  }catch(err){
-    res.status(400).send("ERROR:" + err.message);
-  }
+profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
+  try {
+    if (!validateEditProfileData(req)) {
+      return res.status(400).json({ error: "Invalid data" });
+    }
 
+    const loggedinUser = req.user;
+    Object.keys(req.body).forEach((key) => {
+      loggedinUser[key] = req.body[key];
+    });
+
+    await loggedinUser.save();
+    res.status(200).json(loggedinUser);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // profile update password api

@@ -5,13 +5,15 @@ const ConnectionRequestModel = require("../models/connectionRequest");
 const UserModel = require("../models/user");
 const { set } = require("mongoose");
 
+const USER_SAFE_DATA = "firstName lastName photoUrl age gender about skills";
+
 userRouter.get("/user/request/received", userAuth, async(req, res) => {
     try{
         const loggedInUser = req.user;
-const connectionRequest = await ConnectionRequestModel.find({
+       const connectionRequest = await ConnectionRequestModel.find({
     toUserId : loggedInUser._id,
     status : "interested"
-}).populate("fromUserId", ["firstName", "lastName", "emailId"]); 
+}).populate("fromUserId", ["firstName", "lastName", "emailId", "age", "gender", "photoUrl"]); 
 
 res.json({message: "data fetched", data : connectionRequest});
 
@@ -33,8 +35,8 @@ userRouter.get("/user/connections", userAuth, async(req, res) => {
             { toUserId: loggedInUser._id, status: "accepted" },
           ],
         })
-          .populate("fromUserId", ["firstName", "lastName", "emailId"])
-          .populate("toUserId", ["firstName", "lastName", "emailId"]);
+          .populate("fromUserId", USER_SAFE_DATA)
+          .populate("toUserId", USER_SAFE_DATA);
         // connectionRequest = [{fromUserId: divya, toUserId: puja}, {fromUserId: puja, toUserId: john}]
         // fromUserId => divya, toUserId => puja    
         // fromUserId => puja, toUserId => john
@@ -80,12 +82,14 @@ hideUserIdsfromFeed.add(request.toUserId.toString());
 });
 
 const user = await UserModel.find({
-  $and :[
-      {_id : {$nin : Array.from(hideUserIdsfromFeed)}}, 
-     { _id : { $ne : loggedInUser._id}}
-
-  ]
-}).select(["firstName", "lastName", "emailId"]).skip(skip).limit(limit);
+  $and: [
+    { _id: { $nin: Array.from(hideUserIdsfromFeed) } },
+    { _id: { $ne: loggedInUser._id } },
+  ],
+})
+  .select(USER_SAFE_DATA)
+  .skip(skip)
+  .limit(limit);
 
 res.send(user);
 
