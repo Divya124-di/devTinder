@@ -7,34 +7,17 @@ require("dotenv").config();
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
 
-
-
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173", // frontend origin
-//     methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"], // allow PATCH
-//     credentials: true,
-//     preflightContinue: false,
-//     optionsSuccessStatus: 204,
-//   })
-// );
-
-// CORS middleware
-
-const corsOptions = {
-  origin: "http://localhost:5173", // Your frontend origin
-  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"], // include PATCH!
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
-
-// 👇 This line is critical for OPTIONS preflight requests
-app.options("*", cors(corsOptions));
 
 
 // Connect to Database First
